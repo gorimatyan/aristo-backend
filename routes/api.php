@@ -13,9 +13,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::get('user', [AuthController::class, 'user'])->name('api.user');
 
-    // ルーム作成
-    Route::post('rooms/join', [RoomController::class, 'join'])->name('api.rooms.join');
     // ルーム参加
+    Route::post('rooms/join', [RoomController::class, 'join'])->name('api.rooms.join');
+    // ルーム退出
     Route::post('rooms/leave', [RoomController::class, 'leave'])->name('api.rooms.leave');
 });
 
