@@ -308,8 +308,6 @@ class RoomService
                     'useTLS' => true
                 ]
             );
-
-            $channel = "presence-room-{$roomData['id']}";
             
             // ユーザー情報を取得（簡略化のため、IDのみ送信）
             $positiveUser = null;
@@ -337,6 +335,8 @@ class RoomService
                 'topic_id' => $roomData['topic_id'],
                 'theme_name' => $roomData['theme_name']
             ];
+
+            $channel = "presence-room-{$roomData['id']}";
 
             $pusher->trigger($channel, 'matching-success', $data);
             
