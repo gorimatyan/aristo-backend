@@ -387,7 +387,7 @@ class RoomControllerTest extends TestCase
 
         // 期待されるPusher通知データ
         $expectedPusherData = [
-            'event' => 'matching-success',
+            'event' => 'MatchingSuccess',
             'room_id' => $data2['room_id'],
             'positive_user' => [
                 'id' => $user2->id,
@@ -403,10 +403,95 @@ class RoomControllerTest extends TestCase
 
         Log::info('【Pusherテスト】期待される通知データ', $expectedPusherData);
         Log::info('【Pusherテスト】チャンネル名', [
-            'channel' => "presence-room-{$data2['room_id']}"
+            'channel' => "presence-room.{$data2['room_id']}"
         ]);
 
         // 両ユーザーが同じチャンネルに参加していることを確認
         $this->assertEquals($data1['channel'], $data2['channel']);
+    }
+
+    /**
+     * ルーム退出テスト
+     */
+    public function test_leave_room_success()
+    {
+        $user = User::factory()->create();
+
+        // まずルームに参加
+        $joinResponse = $this->actingAs($user)->postJson('/api/rooms/join', [
+            'topicId' => 1,
+            'themeName' => 'education'
+        ]);
+
+        $joinResponse->assertStatus(201);
+        $joinData = $joinResponse->json('data');
+
+        Log::info('【退出テスト】参加レスポンス', $joinData);
+
+        // 参加ルームを確認
+        $redis = Redis::connection();
+        $userRooms = $redis->smembers("user_rooms:{$user->id}");
+        $roomData = $redis->hgetall("room:{$joinData['room_id']}");
+
+        Log::info('【退出テスト】参加後のRedisデータ', [
+            'user_rooms' => $userRooms,
+            'room_data' => $roomData
+        ]);
+
+        $this->assertContains($joinData['room_id'], $userRooms);
+        $this->assertEquals($user->id, $roomData['positive_user_id']);
+
+        // ルームから退出
+        $leaveResponse = $this->actingAs($user)->postJson('/api/rooms/leave');
+
+        $leaveResponse->assertStatus(200);
+        $leaveData = $leaveResponse->json();
+
+        Log::info('【退出テスト】退出レスポンス', $leaveData);
+
+        // 退出後のRedisデータを確認
+        $userRoomsAfter = $redis->smembers("user_rooms:{$user->id}");
+        $roomDataAfter = $redis->hgetall("room:{$joinData['room_id']}");
+
+        Log::info('【退出テスト】退出後のRedisデータ', [
+            'user_rooms' => $userRoomsAfter,
+            'room_data' => $roomDataAfter
+        ]);
+
+        // アサーション
+        $this->assertEquals('ルームから退出しました', $leaveData['message']);
+        $this->assertEmpty($userRoomsAfter); // 参加ルームが空になる
+        $this->assertEmpty($roomDataAfter); // ルームが削除される
+    }
+
+    /**
+     * 参加中のルームがない場合のエラーテスト
+     */
+    public function test_leave_room_no_rooms_error()
+    {
+        $user = User::factory()->create();
+
+        // ルームに参加せずに退出を試行
+        $response = $this->actingAs($user)->postJson('/api/rooms/leave');
+
+        $response->assertStatus(400)
+                ->assertJson([
+                    'message' => '参加中のルームがありません'
+                ]);
+
+        Log::info('【退出テスト】エラーレスポンス', $response->json());
+    }
+
+    /**
+     * 認証なしでの退出エラーテスト
+     */
+    public function test_leave_room_unauthenticated_error()
+    {
+        // 認証なしで退出を試行
+        $response = $this->postJson('/api/rooms/leave');
+
+        $response->assertStatus(401);
+
+        Log::info('【退出テスト】認証エラーレスポンス', $response->json());
     }
 }

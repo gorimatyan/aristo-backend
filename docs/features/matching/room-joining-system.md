@@ -48,7 +48,7 @@
     "room_id": "uuid-123",
     "side": "negative",
     "matched": false,  ← 待機中
-    "channel": "presence-room-uuid-123"
+    "channel": "presence-room.uuid-123"
   }
 }
 
@@ -84,7 +84,7 @@ room:uuid-123 = {
     "room_id": "uuid-123",  ← 同じルーム
     "side": "positive",
     "matched": true,  ← マッチング成立
-    "channel": "presence-room-uuid-123"
+    "channel": "presence-room.uuid-123"
   }
 }
 
@@ -100,7 +100,7 @@ room:uuid-123 = {
 
 Pusher通知:
 {
-  "event": "matching-success",
+  "event": "MatchingSuccess",
   "room_id": "uuid-123",
   "positive_user": { "id": "2", "name": "User 2" },
   "negative_user": { "id": "1", "name": "User 1" },
@@ -149,7 +149,7 @@ POST /api/rooms/join
     "room_id": "uuid-string",
     "side": "positive|negative",
     "matched": true|false,
-    "channel": "presence-room-uuid-string"
+    "channel": "presence-room.uuid-string"
   }
 }
 ```
@@ -202,13 +202,13 @@ Members: [room_id1, room_id2, ...]
 
 #### チャンネル
 ```
-presence-room-{room_id}
+presence-room.{room_id}
 ```
 
-#### イベント: matching-success
+#### イベント: MatchingSuccess
 ```json
 {
-  "event": "matching-success",
+  "event": "MatchingSuccess",
   "room_id": "uuid-string",
   "positive_user": { "id": "user_id", "name": "User {user_id}" },
   "negative_user": { "id": "user_id", "name": "User {user_id}" },

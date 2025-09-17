@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,10 +20,15 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 // Presenceチャンネルの認証
-Broadcast::channel('presence-room-{roomId}', function ($user, $roomId) {
+Broadcast::channel('room.{roomId}', function ($user, $roomId) {
     // ユーザーがルームに参加しているかチェック
-    $redis = \Illuminate\Support\Facades\Redis::connection();
-    $userRooms = $redis->smembers("user_rooms:{$user->id}");
+    // $redis = Redis::connection();
+    // $userRooms = $redis->smembers("user_rooms:{$user->id}");
+    Log::info('user', ['user' => $user]);
     
-    return in_array($roomId, $userRooms);
+    return $user;
+});
+
+Broadcast::channel('channel', function ($user) {
+    return $user;
 });

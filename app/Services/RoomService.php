@@ -29,8 +29,8 @@ use Illuminate\Support\Facades\Log;
  *   - メンバー: room_id1, room_id2, ...
  * 
  * Pusher通知：
- * - チャンネル: presence-room-{room_id}
- * - イベント: matching-success
+ * - チャンネル: presence-room.{room_id}
+ * - イベント: MatchingSuccess
  * - データ: ルーム情報、参加ユーザー情報、トピック情報
  */
 class RoomService
@@ -210,12 +210,12 @@ class RoomService
             'side' => $availableSide
         ]);
 
-        return [
-            'room_id' => $roomId,
-            'side' => $availableSide,
-            'matched' => true,
-            'channel' => "presence-room-{$roomId}"
-        ];
+               return [
+                   'room_id' => $roomId,
+                   'side' => $availableSide,
+                   'matched' => true,
+                   'channel' => "room.{$roomId}"
+               ];
     }
 
     /**
@@ -265,22 +265,22 @@ class RoomService
             'side' => $side
         ]);
 
-        return [
-            'room_id' => $roomId,
-            'side' => $side,
-            'matched' => false,
-            'channel' => "presence-room-{$roomId}"
-        ];
+               return [
+                   'room_id' => $roomId,
+                   'side' => $side,
+                   'matched' => false,
+                   'channel' => "room.{$roomId}"
+               ];
     }
 
     /**
      * マッチング成立通知を送信
      * 
-     * Pusherを使用してpresence-room-{room_id}チャンネルに
-     * 'matching-success'イベントを送信する。
+     * Pusherを使用してpresence-room.{room_id}チャンネルに
+     * 'MatchingSuccess'イベントを送信する。
      * 
      * 送信データ：
-     * - event: 'matching-success'
+     * - event: 'MatchingSuccess'
      * - room_id: ルームID
      * - positive_user: ポジティブサイドユーザー情報
      * - negative_user: ネガティブサイドユーザー情報
@@ -328,7 +328,7 @@ class RoomService
             }
             
             $data = [
-                'event' => 'matching-success',
+                'event' => 'MatchingSuccess',
                 'room_id' => $roomData['id'],
                 'positive_user' => $positiveUser,
                 'negative_user' => $negativeUser,
@@ -336,13 +336,13 @@ class RoomService
                 'theme_name' => $roomData['theme_name']
             ];
 
-            $channel = "presence-room-{$roomData['id']}";
+                   $presenceChannel = "presence-room.{$roomData['id']}";
 
-            $pusher->trigger($channel, 'matching-success', $data);
+            $pusher->trigger($presenceChannel, 'MatchingSuccess', $data);
             
             Log::info('マッチング成立通知を送信', [
                 'room_id' => $roomData['id'],
-                'channel' => $channel
+                'channel' => $presenceChannel
             ]);
         } catch (\Exception $e) {
             Log::error('Pusher通知送信エラー', [

@@ -30,7 +30,7 @@ class RoomController extends Controller
      *     "room_id": "uuid-string",
      *     "side": "positive|negative",
      *     "matched": true|false,
-     *     "channel": "presence-room-uuid-string",
+     *     "channel": "presence-room.uuid-string",
      *     "auth": {
      *       "auth": "pusher_auth_string",
      *       "channel_data": "user_info_json"
@@ -104,6 +104,28 @@ class RoomController extends Controller
     }
 
 
+    /**
+     * ルームから退出する
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * 
+     * @response 200 {
+     *   "message": "ルームから退出しました"
+     * }
+     * 
+     * @response 400 {
+     *   "message": "参加中のルームがありません"
+     * }
+     * 
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
+     * 
+     * @response 500 {
+     *   "message": "Internal server error"
+     * }
+     */
     public function leave(Request $request)
     {
         $user = Auth::user();
